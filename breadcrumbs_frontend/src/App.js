@@ -6,33 +6,69 @@ import Breadcrumbs from './components/Breadcrumbs';
 /**
  * PUBLIC_INTERFACE
  * App renders a centered card with Breadcrumbs and simple hash-based navigation.
- * - Pages: "/", "/products", "/products/mobile"
+ * - Supports hierarchical routes: "#/", "#/products", and "#/products/:item"
+ * - Items examples: mobile, laptop, tablet, accessories
  * - Uses Ocean Professional theme via Tailwind classes
  * - Displays contextual content per page beneath the breadcrumbs
- * - Removes any debug/footer panels below the main content
  */
 function App() {
-  const routes = useMemo(
+  // Allowed product items with labels and simple descriptions
+  const productItems = useMemo(
     () => ({
-      '/': { title: 'Home', description: 'Welcome to our Ocean-themed demo.' },
-      '/products': { title: 'Products', description: 'Browse a few sample products below.' },
-      '/products/mobile': { title: 'Mobile', description: 'A quick look at our Mobile product line.' },
+      mobile: {
+        title: 'Mobile',
+        description:
+          'Explore our latest mobile devices featuring long battery life, vivid displays, and fast connectivity.',
+      },
+      laptop: {
+        title: 'Laptop',
+        description:
+          'Performance notebooks for work and play, with sleek design and powerful internals.',
+      },
+      tablet: {
+        title: 'Tablet',
+        description:
+          'Portable tablets perfect for reading, browsing, and creativity on the go.',
+      },
+      accessories: {
+        title: 'Accessories',
+        description:
+          'Headphones, chargers, and cases designed to complement your devices.',
+      },
     }),
     []
   );
 
+  // Normalize and parse hash to get route and params
   const normalizeHash = (hash) => {
-    const cleaned = hash.replace(/^#/, '');
+    const cleaned = (hash || '').replace(/^#/, '');
     return cleaned || '/';
   };
 
-  const [path, setPath] = useState(() => normalizeHash(window.location.hash) || '/');
+  const parseHash = (hash) => {
+    const path = normalizeHash(hash);
+    const segments = path.split('/').filter(Boolean); // remove empty
+    // routes:
+    // [] -> '/'
+    // ['products'] -> '/products'
+    // ['products', ':item'] -> '/products/:item'
+    if (segments.length === 0) {
+      return { route: '/', params: {} };
+    }
+    if (segments.length === 1 && segments[0] === 'products') {
+      return { route: '/products', params: {} };
+    }
+    if (segments.length === 2 && segments[0] === 'products') {
+      return { route: '/products/:item', params: { item: segments[1] } };
+    }
+    // Fallback: treat as home
+    return { route: '/', params: {} };
+  };
+
+  const [routeInfo, setRouteInfo] = useState(() => parseHash(window.location.hash));
 
   useEffect(() => {
-    const onHashChange = () => {
-      const next = normalizeHash(window.location.hash);
-      setPath(next);
-    };
+    const onHashChange = () => setRouteInfo(parseHash(window.location.hash));
     window.addEventListener('hashchange', onHashChange);
     if (!window.location.hash) {
       window.location.hash = '#/';
@@ -43,38 +79,51 @@ function App() {
   }, []);
 
   const navigate = (to) => {
-    if (normalizeHash(window.location.hash) !== to) {
+    const normalized = normalizeHash(window.location.hash);
+    if (normalized !== to) {
       window.location.hash = `#${to}`;
     }
   };
 
+  // Compute breadcrumbs dynamically based on route
   const breadcrumbItems = useMemo(() => {
-    const items = [
-      { label: 'Home', href: '#/', current: false },
-      { label: 'Products', href: '#/products', current: false },
-      { label: 'Mobile', href: undefined, current: false },
-    ];
-    if (path === '/') {
-      items[0].href = undefined;
-      items[0].current = true;
-    } else if (path === '/products') {
-      items[1].href = undefined;
-      items[1].current = true;
-    } else {
-      // default to mobile page as per demo
-      items[2].current = true;
+    const base = [{ label: 'Home', href: '#/', current: false }];
+
+    if (routeInfo.route === '/') {
+      return [{ label: 'Home', current: true }];
     }
-    return items;
-  }, [path]);
 
-  const currentPage = routes[path] || routes['/products/mobile'];
+    if (routeInfo.route === '/products') {
+      return [
+        ...base,
+        { label: 'Products', current: true },
+      ];
+    }
 
-  // Render content per current route
+    if (routeInfo.route === '/products/:item') {
+      const rawItem = (routeInfo.params.item || '').toLowerCase();
+      // Capitalize first letter for display, keep "Mobile" as example item among others
+      const label =
+        productItems[rawItem]?.title ||
+        (rawItem ? rawItem.charAt(0).toUpperCase() + rawItem.slice(1) : 'Item');
+
+      return [
+        ...base,
+        { label: 'Products', href: '#/products' },
+        { label, current: true },
+      ];
+    }
+
+    // Default to home if unknown
+    return [{ label: 'Home', current: true }];
+  }, [routeInfo, productItems]);
+
+  // Content rendering per route
   const renderContent = () => {
-    if (path === '/') {
+    if (routeInfo.route === '/') {
       return (
         <div className="space-y-4">
-          <h1 className="text-2xl font-semibold text-gray-900">{currentPage.title}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Home</h1>
           <p className="text-gray-600">
             Welcome to the Breadcrumbs demo. Navigate using the links above to see the content update while
             maintaining a clean, modern Ocean Professional style.
@@ -94,38 +143,38 @@ function App() {
         </div>
       );
     }
-    if (path === '/products') {
+
+    if (routeInfo.route === '/products') {
       const products = [
-        { id: 1, name: 'Mobile', href: '#/products/mobile', desc: 'Smartphones, tablets, and accessories.' },
-        { id: 2, name: 'Laptop', href: '#/products', desc: 'Performance notebooks for work and play.' },
-        { id: 3, name: 'Audio', href: '#/products', desc: 'Headphones and speakers with rich sound.' },
+        { key: 'mobile', name: 'Mobile', desc: 'Smartphones, tablets, and accessories.' },
+        { key: 'laptop', name: 'Laptop', desc: 'Performance notebooks for work and play.' },
+        { key: 'tablet', name: 'Tablet', desc: 'Portable tablets for reading, browsing, and more.' },
+        { key: 'accessories', name: 'Accessories', desc: 'Headphones, chargers, and cases.' },
       ];
       return (
         <div className="space-y-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">{currentPage.title}</h1>
-            <p className="text-gray-600 mt-1">{currentPage.description}</p>
+            <h1 className="text-2xl font-semibold text-gray-900">Products</h1>
+            <p className="text-gray-600 mt-1">Browse a few sample products below.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {products.map((p) => (
               <div
-                key={p.id}
+                key={p.key}
                 className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow transition"
               >
                 <div className="font-medium text-gray-900">{p.name}</div>
                 <div className="text-sm text-gray-600 mt-1">{p.desc}</div>
                 <div className="mt-3">
                   <a
-                    href={p.href}
+                    href={`#/products/${p.key}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      if (p.name === 'Mobile') {
-                        navigate('/products/mobile');
-                      }
+                      navigate(`/products/${p.key}`);
                     }}
                     className="text-primary hover:text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
                   >
-                    {p.name === 'Mobile' ? 'View Mobile' : 'Learn more'}
+                    {p.name === 'Mobile' ? 'View Mobile' : `View ${p.name}`}
                   </a>
                 </div>
               </div>
@@ -134,34 +183,47 @@ function App() {
         </div>
       );
     }
-    // /products/mobile
-    return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold text-gray-900">{currentPage.title}</h1>
-        <p className="text-gray-600">
-          Explore our latest mobile devices featuring long battery life, vivid displays, and fast connectivity.
-        </p>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            className="inline-flex items-center rounded-lg border border-primary/20 text-primary px-4 py-2 bg-white hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition"
-            onClick={() => navigate('/products')}
-          >
-            Back to Products
-          </button>
-          <a
-            href="#/"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/');
-            }}
-            className="inline-flex items-center rounded-lg px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition"
-          >
-            Go Home
-          </a>
+
+    if (routeInfo.route === '/products/:item') {
+      const rawItem = (routeInfo.params.item || '').toLowerCase();
+      const meta =
+        productItems[rawItem] ||
+        {
+          title: rawItem ? rawItem.charAt(0).toUpperCase() + rawItem.slice(1) : 'Item',
+          description:
+            'This is a placeholder for the selected product category. More details coming soon.',
+        };
+
+      return (
+        <div className="space-y-4">
+          <h1 className="text-2xl font-semibold text-gray-900">{meta.title}</h1>
+          <p className="text-gray-600">{meta.description}</p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              className="inline-flex items-center rounded-lg border border-primary/20 text-primary px-4 py-2 bg-white hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition"
+              onClick={() => navigate('/products')}
+            >
+              Back to Products
+            </button>
+            <a
+              href="#/"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/');
+              }}
+              className="inline-flex items-center rounded-lg px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition"
+              aria-label="Go Home"
+            >
+              Go Home
+            </a>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // fallback
+    return null;
   };
 
   return (

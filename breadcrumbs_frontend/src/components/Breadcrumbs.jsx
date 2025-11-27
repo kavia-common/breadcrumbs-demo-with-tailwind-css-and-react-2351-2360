@@ -62,15 +62,17 @@ export default function Breadcrumbs({ items = [] }) {
         </svg>
       );
     }
+    // Default: no specific icon for other items (Laptop/Tablet/Accessories)
     return null;
   };
 
-  const buildTitle = (label) => {
+  const buildTitle = (label, isCurrent) => {
     const normalized = String(label || '').toLowerCase();
     if (normalized === 'home') return 'Go to Home';
     if (normalized === 'products') return 'View Products';
-    if (normalized === 'mobile') return 'Current page: Mobile';
-    return label;
+    if (normalized === 'mobile') return isCurrent ? 'Current page: Mobile' : 'Go to Mobile';
+    // Fallback for dynamic items: sensible defaults
+    return isCurrent ? `Current page: ${label}` : `Go to ${label}`;
   };
 
   return (
@@ -80,7 +82,7 @@ export default function Breadcrumbs({ items = [] }) {
           const isCurrent = !!item.current;
           const isLink = !!item.href && !isCurrent;
           const icon = getIconFor(item.label);
-          const title = buildTitle(item.label);
+          const title = buildTitle(item.label, isCurrent);
 
           return (
             <li key={`${item.label}-${idx}`} className="flex items-center">

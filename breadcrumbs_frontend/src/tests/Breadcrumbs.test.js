@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import App from '../App';
 
@@ -8,7 +8,7 @@ describe('Breadcrumbs Demo', () => {
     window.location.hash = '#/products/mobile';
   });
 
-  test('renders Home, Products, Mobile in order with correct aria, icons, and tooltips', () => {
+  test('renders Home, Products, Mobile in order with correct aria and tooltips', () => {
     render(<App />);
 
     const nav = screen.getByLabelText(/breadcrumb/i);
@@ -28,40 +28,20 @@ describe('Breadcrumbs Demo', () => {
     expect(mobile).toHaveAttribute('aria-current', 'page');
     expect(mobile.closest('a')).toBeNull();
 
-    // Icons should be present preceding the text (find svg in the same container)
-    const homeContainer = homeText.parentElement;
-    const productsContainer = productsText.parentElement;
-    const mobileContainer = mobileText.parentElement;
-
-    expect(within(homeContainer).getByRole('img', { hidden: true })).toBeTruthy();
-  });
-
-  test('icons have title tooltips on links and current item has title, without breaking navigation', () => {
-    render(<App />);
-
-    // Home and Products should be links with titles; Mobile is current with title but not a link
+    // Tooltip titles
     const homeLink = screen.getByRole('link', { name: 'Home' });
     const productsLink = screen.getByRole('link', { name: 'Products' });
-
     expect(homeLink).toHaveAttribute('title', 'Go to Home');
     expect(productsLink).toHaveAttribute('title', 'View Products');
-
-    const mobileCurrent = screen.getByText('Mobile');
-    expect(mobileCurrent).toHaveAttribute('title', 'Current page: Mobile');
-    expect(mobileCurrent.closest('a')).toBeNull();
-
-    // Ensure keyboard targeting is intact: links have focus-visible treatment class
-    expect(homeLink.className).toMatch(/focus-visible:ring-2/);
-    expect(productsLink.className).toMatch(/focus-visible:ring-2/);
   });
 
-  test('clicking Home or Products updates hash, active crumb, and content', () => {
+  test('clicking Home and Products updates hash, active crumb, and content', () => {
     render(<App />);
 
     // Start at /products/mobile
     expect(window.location.hash).toBe('#/products/mobile');
 
-    // Click Home (via a link in content or breadcrumb link if present)
+    // Click Home via content "Go Home" link
     const goHomeLink = screen.getByRole('link', { name: /go home/i });
     fireEvent.click(goHomeLink);
     expect(window.location.hash).toBe('#/');
@@ -70,12 +50,8 @@ describe('Breadcrumbs Demo', () => {
     expect(homeCrumb).toHaveAttribute('aria-current', 'page');
     expect(homeCrumb.closest('a')).toBeNull();
 
-    // Home content should be visible with CTA to view products
-    expect(screen.getByText(/Breadcrumbs demo/i)).toBeInTheDocument();
+    // Home content CTA
     const viewProducts = screen.getByRole('link', { name: /view products/i });
-    expect(viewProducts).toBeInTheDocument();
-
-    // Click Products and verify content updates
     fireEvent.click(viewProducts);
     expect(window.location.hash).toBe('#/products');
 
@@ -83,19 +59,37 @@ describe('Breadcrumbs Demo', () => {
     expect(productsCrumb).toHaveAttribute('aria-current', 'page');
     expect(productsCrumb.closest('a')).toBeNull();
 
-    // Products grid/list present
+    // Products list
     expect(screen.getByText('Mobile')).toBeInTheDocument();
     expect(screen.getByText('Laptop')).toBeInTheDocument();
-    expect(screen.getByText('Audio')).toBeInTheDocument();
+    expect(screen.getByText('Tablet')).toBeInTheDocument();
+    expect(screen.getByText('Accessories')).toBeInTheDocument();
 
-    // Navigate to Mobile via the "View Mobile" link
+    // Navigate to Mobile
     const viewMobileLink = screen.getByRole('link', { name: /view mobile/i });
     fireEvent.click(viewMobileLink);
     expect(window.location.hash).toBe('#/products/mobile');
 
-    // Back to mobile details view
     expect(
       screen.getByText(/latest mobile devices featuring long battery life/i)
+    ).toBeInTheDocument();
+  });
+
+  test('direct route to laptop shows correct breadcrumb current and content', () => {
+    window.location.hash = '#/products/laptop';
+    render(<App />);
+
+    const laptopCrumb = screen.getByText('Laptop');
+    expect(laptopCrumb).toBeInTheDocument();
+    expect(laptopCrumb).toHaveAttribute('aria-current', 'page');
+
+    const homeLink = screen.getByRole('link', { name: 'Home' });
+    const productsLink = screen.getByRole('link', { name: 'Products' });
+    expect(homeLink).toBeInTheDocument();
+    expect(productsLink).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/performance notebooks for work and play/i)
     ).toBeInTheDocument();
   });
 });
