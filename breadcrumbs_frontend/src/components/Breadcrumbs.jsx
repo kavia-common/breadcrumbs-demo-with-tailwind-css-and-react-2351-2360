@@ -5,12 +5,12 @@ import React from 'react';
  * Breadcrumbs component renders a navigational breadcrumb trail.
  * Props:
  * - items: Array<{ label: string, href?: string, current?: boolean }>
- * 
+ *
  * Icons:
  * - Home: house icon
  * - Products: tag/boxes icon
  * - Mobile: device/mobile icon
- * 
+ *
  * Accessibility:
  * - Icons are decorative (aria-hidden="true")
  * - Links include title for tooltip and aria-label
@@ -20,11 +20,12 @@ export default function Breadcrumbs({ items = [] }) {
   // Choose an icon based on label. Icons are purely decorative here.
   const getIconFor = (label) => {
     const normalized = String(label || '').toLowerCase();
+    const baseIconClass = 'h-4 w-4 mr-1.5 text-gray-400';
     if (normalized === 'home') {
       // Home icon
       return (
         <svg
-          className="h-4 w-4 mr-1.5 text-gray-400"
+          className={baseIconClass}
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -38,7 +39,7 @@ export default function Breadcrumbs({ items = [] }) {
       // Tag/boxes icon
       return (
         <svg
-          className="h-4 w-4 mr-1.5 text-gray-400"
+          className={baseIconClass}
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -52,7 +53,7 @@ export default function Breadcrumbs({ items = [] }) {
       // Mobile/device icon
       return (
         <svg
-          className="h-4 w-4 mr-1.5 text-gray-400"
+          className={baseIconClass}
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -75,38 +76,52 @@ export default function Breadcrumbs({ items = [] }) {
     return isCurrent ? `Current page: ${label}` : `Go to ${label}`;
   };
 
+  // Chevron separator icon used between crumbs
+  const Chevron = () => (
+    <svg
+      className="h-4 w-4 text-gray-300"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        fillRule="evenodd"
+        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+
   return (
     <nav aria-label="Breadcrumb">
-      <ol className="flex items-center text-sm text-gray-600">
+      {/* Surface background and padding for improved hierarchy */}
+      <ol className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600">
         {items.map((item, idx) => {
           const isCurrent = !!item.current;
           const isLink = !!item.href && !isCurrent;
           const icon = getIconFor(item.label);
           const title = buildTitle(item.label, isCurrent);
 
+          // Pill style base + variants
+          const pillBase =
+            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2';
+          const pillLink =
+            'bg-white/70 hover:bg-white text-primary hover:text-secondary ring-1 ring-gray-200 shadow-sm';
+          const pillCurrent =
+            'bg-primary/10 text-gray-900 ring-1 ring-primary/20 font-semibold';
+
           return (
             <li key={`${item.label}-${idx}`} className="flex items-center">
               {idx !== 0 && (
-                <span className="mx-2 text-gray-300" aria-hidden="true">
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                <span className="mx-2 flex items-center" aria-hidden="true">
+                  <Chevron />
                 </span>
               )}
               {isLink ? (
                 <a
                   href={item.href}
-                  className="inline-flex items-center text-primary hover:text-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
+                  className={`${pillBase} ${pillLink}`}
                   title={title}
                   aria-label={item.label}
                 >
@@ -115,7 +130,7 @@ export default function Breadcrumbs({ items = [] }) {
                 </a>
               ) : (
                 <span
-                  className={`inline-flex items-center ${isCurrent ? 'font-semibold text-gray-900' : 'text-gray-500'}`}
+                  className={`${pillBase} ${pillCurrent}`}
                   aria-current={isCurrent ? 'page' : undefined}
                   title={title}
                 >

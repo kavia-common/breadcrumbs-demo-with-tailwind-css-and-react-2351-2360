@@ -305,11 +305,13 @@ function App() {
           <div className="p-6 sm:p-8">
             {/* Breadcrumb bar with Ocean theme accents */}
             <div className="mb-6 pb-4 border-b border-gray-100">
-              <Breadcrumbs
-                items={breadcrumbItems.map((item) => ({
-                  ...item,
-                }))}
-              />
+              <div className="bg-white/60 rounded-lg p-2 sm:p-3">
+                <Breadcrumbs
+                  items={breadcrumbItems.map((item) => ({
+                    ...item,
+                  }))}
+                />
+              </div>
             </div>
 
             {/* Dynamic content area */}
