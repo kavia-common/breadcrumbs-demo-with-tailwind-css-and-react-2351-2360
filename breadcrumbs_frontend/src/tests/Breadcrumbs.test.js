@@ -14,7 +14,6 @@ describe('Breadcrumbs Demo', () => {
     const nav = screen.getByLabelText(/breadcrumb/i);
     expect(nav).toBeInTheDocument();
 
-    const items = screen.getAllByText(/Home|Products|Mobile/);
     // Ensure all labels exist
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Products')).toBeInTheDocument();
@@ -24,31 +23,57 @@ describe('Breadcrumbs Demo', () => {
     const mobile = screen.getByText('Mobile');
     expect(mobile).toHaveAttribute('aria-current', 'page');
     expect(mobile.closest('a')).toBeNull();
+
+    // On initial mobile page, show the mobile details content snippet
+    expect(
+      screen.getByText(/latest mobile devices featuring long battery life/i)
+    ).toBeInTheDocument();
+
+    // Ensure no debug/footer panel entries exist (env var keys should not render)
+    expect(screen.queryByText('REACT_APP_API_BASE')).not.toBeInTheDocument();
   });
 
-  test('clicking Home or Products updates hash and active crumb', () => {
+  test('clicking Home or Products updates hash, active crumb, and content', () => {
     render(<App />);
 
     // Start at /products/mobile
     expect(window.location.hash).toBe('#/products/mobile');
 
-    // Click Home
-    const homeLinkButton = screen.getByRole('link', { name: 'Home' });
-    fireEvent.click(homeLinkButton);
+    // Click Home (via a link in content or breadcrumb link if present)
+    const goHomeLink = screen.getByRole('link', { name: /go home/i });
+    fireEvent.click(goHomeLink);
     expect(window.location.hash).toBe('#/');
 
-    // After clicking, "Home" becomes current and is not a link
     const homeCrumb = screen.getByText('Home');
     expect(homeCrumb).toHaveAttribute('aria-current', 'page');
     expect(homeCrumb.closest('a')).toBeNull();
 
-    // Click Products (navigate via link/button)
-    const productsButton = screen.getByRole('link', { name: 'Products' });
-    fireEvent.click(productsButton);
+    // Home content should be visible with CTA to view products
+    expect(screen.getByText(/Breadcrumbs demo/i)).toBeInTheDocument();
+    const viewProducts = screen.getByRole('link', { name: /view products/i });
+    expect(viewProducts).toBeInTheDocument();
+
+    // Click Products and verify content updates
+    fireEvent.click(viewProducts);
     expect(window.location.hash).toBe('#/products');
 
     const productsCrumb = screen.getByText('Products');
     expect(productsCrumb).toHaveAttribute('aria-current', 'page');
     expect(productsCrumb.closest('a')).toBeNull();
+
+    // Products grid/list present
+    expect(screen.getByText('Mobile')).toBeInTheDocument();
+    expect(screen.getByText('Laptop')).toBeInTheDocument();
+    expect(screen.getByText('Audio')).toBeInTheDocument();
+
+    // Navigate to Mobile via the "View Mobile" link
+    const viewMobileLink = screen.getByRole('link', { name: /view mobile/i });
+    fireEvent.click(viewMobileLink);
+    expect(window.location.hash).toBe('#/products/mobile');
+
+    // Back to mobile details view
+    expect(
+      screen.getByText(/latest mobile devices featuring long battery life/i)
+    ).toBeInTheDocument();
   });
 });
