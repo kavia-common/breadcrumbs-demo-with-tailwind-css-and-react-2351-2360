@@ -8,8 +8,12 @@ import React from 'react';
  *
  * Icons:
  * - Home: house icon
- * - Products: tag/boxes icon
+ * - Products: grid/box icon
  * - Mobile: device/mobile icon
+ * - Laptop: laptop icon
+ * - Tablet: tablet icon
+ * - Accessories: tag/plug icon
+ * - Fallback: generic dot icon
  *
  * Accessibility:
  * - Icons are decorative (aria-hidden="true")
@@ -17,61 +21,121 @@ import React from 'react';
  * - Non-links (current crumb) use aria-current="page"
  */
 export default function Breadcrumbs({ items = [] }) {
+  // PUBLIC_INTERFACE
   // Choose an icon based on label. Icons are purely decorative here.
   const getIconFor = (label) => {
     const normalized = String(label || '').toLowerCase();
     const baseIconClass = 'h-4 w-4 mr-1.5 text-gray-400';
-    if (normalized === 'home') {
-      // Home icon
-      return (
-        <svg
-          className={baseIconClass}
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 9.414V16a2 2 0 002 2h2a1 1 0 001-1v-3a1 1 0 112 0v3a1 1 0 001 1h2a2 2 0 002-2V9.414l.293.293a1 1 0 001.414-1.414l-7-7z" />
-        </svg>
-      );
+
+    switch (normalized) {
+      case 'home':
+        // Home icon
+        return (
+          <svg
+            className={baseIconClass}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 9.414V16a2 2 0 002 2h2a1 1 0 001-1v-3a1 1 0 112 0v3a1 1 0 001 1h2a2 2 0 002-2V9.414l.293.293a1 1 0 001.414-1.414l-7-7z" />
+          </svg>
+        );
+      case 'products':
+        // Grid/boxes icon
+        return (
+          <svg
+            className={baseIconClass}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 0h6v6h-6v-6z" />
+          </svg>
+        );
+      case 'mobile':
+        // Mobile/device icon
+        return (
+          <svg
+            className={baseIconClass}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M7 3a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2V5a2 2 0 00-2-2H7zm0 2h6v10H7V5zm3 9a1 1 0 100 2 1 1 0 000-2z" />
+          </svg>
+        );
+      case 'laptop':
+        // Laptop icon
+        return (
+          <svg
+            className={baseIconClass}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v7H4V6z" />
+            <path d="M2 17a1 1 0 011-1h18a1 1 0 011 1v1H2v-1z" />
+          </svg>
+        );
+      case 'tablet':
+        // Tablet icon
+        return (
+          <svg
+            className={baseIconClass}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M6 3h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2zm0 2v14h12V5H6zm6 13a1 1 0 100 2 1 1 0 000-2z" />
+          </svg>
+        );
+      case 'accessories':
+        // Accessories tag/plug icon
+        return (
+          <svg
+            className={baseIconClass}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M7 7a5 5 0 0110 0v4h-2V7a3 3 0 10-6 0v4H7V7z" />
+            <path d="M5 11h14a2 2 0 012 2v5a3 3 0 01-3 3H6a3 3 0 01-3-3v-5a2 2 0 012-2zm0 2v5a1 1 0 001 1h12a1 1 0 001-1v-5H5z" />
+          </svg>
+        );
+      default:
+        // Fallback generic circle/dot icon to indicate unknown items
+        return (
+          <svg
+            className={baseIconClass}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="10" cy="10" r="3" />
+          </svg>
+        );
     }
-    if (normalized === 'products') {
-      // Tag/boxes icon
-      return (
-        <svg
-          className={baseIconClass}
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d="M2.166 10.083a2 2 0 01.585-1.414l5.918-5.918a2 2 0 011.414-.585H12a2 2 0 012 2v1.917a2 2 0 01-.585 1.414l-5.918 5.918a2 2 0 01-1.414.585H4.75a2.583 2.583 0 01-2.584-2.584v-1.333zM13.5 2a.5.5 0 00-.5.5V4a1 1 0 001 1h1.5a.5.5 0 00.5-.5V3a1 1 0 00-1-1H13.5z" />
-        </svg>
-      );
-    }
-    if (normalized === 'mobile') {
-      // Mobile/device icon
-      return (
-        <svg
-          className={baseIconClass}
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d="M7 3a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2V5a2 2 0 00-2-2H7zm0 2h6v10H7V5zm3 9a1 1 0 100 2 1 1 0 000-2z" />
-        </svg>
-      );
-    }
-    // Default: no specific icon for other items (Laptop/Tablet/Accessories)
-    return null;
   };
 
   const buildTitle = (label, isCurrent) => {
     const normalized = String(label || '').toLowerCase();
     if (normalized === 'home') return 'Go to Home';
     if (normalized === 'products') return 'View Products';
-    if (normalized === 'mobile') return isCurrent ? 'Current page: Mobile' : 'Go to Mobile';
+    if (normalized === 'mobile')
+      return isCurrent ? 'Current page: Mobile' : 'Go to Mobile';
+    if (normalized === 'laptop')
+      return isCurrent ? 'Current page: Laptop' : 'Go to Laptop';
+    if (normalized === 'tablet')
+      return isCurrent ? 'Current page: Tablet' : 'Go to Tablet';
+    if (normalized === 'accessories')
+      return isCurrent ? 'Current page: Accessories' : 'Go to Accessories';
     // Fallback for dynamic items: sensible defaults
     return isCurrent ? `Current page: ${label}` : `Go to ${label}`;
   };
