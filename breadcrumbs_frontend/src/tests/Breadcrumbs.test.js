@@ -35,7 +35,7 @@ describe('Breadcrumbs Demo', () => {
     expect(productsLink).toHaveAttribute('title', 'View Products');
   });
 
-  test('clicking Home and Products updates hash, active crumb, and content', () => {
+  test('clicking Home and Products updates hash, active crumb, and content (Products list shows icons/badges)', () => {
     render(<App />);
 
     // Start at /products/mobile
@@ -64,6 +64,17 @@ describe('Breadcrumbs Demo', () => {
     expect(screen.getByText('Laptop')).toBeInTheDocument();
     expect(screen.getByText('Tablet')).toBeInTheDocument();
     expect(screen.getByText('Accessories')).toBeInTheDocument();
+
+    // Verify badges/icons presence near titles
+    const mobileBadge = screen.getByText('Mobile').closest('div').querySelector('span[aria-hidden="true"]');
+    const laptopBadge = screen.getByText('Laptop').closest('div').querySelector('span[aria-hidden="true"]');
+    const tabletBadge = screen.getByText('Tablet').closest('div').querySelector('span[aria-hidden="true"]');
+    const accessoriesBadge = screen.getByText('Accessories').closest('div').querySelector('span[aria-hidden="true"]');
+
+    expect(mobileBadge).toBeTruthy();
+    expect(laptopBadge).toBeTruthy();
+    expect(tabletBadge).toBeTruthy();
+    expect(accessoriesBadge).toBeTruthy();
 
     // Navigate to Mobile
     const viewMobileLink = screen.getByRole('link', { name: /view mobile/i });

@@ -15,7 +15,7 @@ describe('App routing and breadcrumbs', () => {
     expect(productsLink).toBeInTheDocument();
   });
 
-  test('Navigate to Products: breadcrumbs update and product cards render', () => {
+  test('Navigate to Products: breadcrumbs update, product cards render with icons/badges', () => {
     render(<App />);
     const productsLink = screen.getByRole('link', { name: /view products/i });
     fireEvent.click(productsLink);
@@ -30,6 +30,24 @@ describe('App routing and breadcrumbs', () => {
     expect(screen.getByText('Laptop')).toBeInTheDocument();
     expect(screen.getByText('Tablet')).toBeInTheDocument();
     expect(screen.getByText('Accessories')).toBeInTheDocument();
+
+    // Each item has a "View <name>" link (keyboard focusable) and decorative icon/badge present
+    expect(screen.getByRole('link', { name: /view mobile/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /view laptop/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /view tablet/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /view accessories/i })).toBeInTheDocument();
+
+    // Decorative icons exist as <svg aria-hidden="true"> preceding titles - query by closest card
+    // We check the existence of badge containers by their computed class indicative of badges
+    const mobileBadge = screen.getByText('Mobile').closest('div').querySelector('span[aria-hidden="true"]');
+    const laptopBadge = screen.getByText('Laptop').closest('div').querySelector('span[aria-hidden="true"]');
+    const tabletBadge = screen.getByText('Tablet').closest('div').querySelector('span[aria-hidden="true"]');
+    const accessoriesBadge = screen.getByText('Accessories').closest('div').querySelector('span[aria-hidden="true"]');
+
+    expect(mobileBadge).toBeTruthy();
+    expect(laptopBadge).toBeTruthy();
+    expect(tabletBadge).toBeTruthy();
+    expect(accessoriesBadge).toBeTruthy();
   });
 
   test('Navigate to product item: Mobile - shows detail and breadcrumbs Home > Products > Mobile', () => {

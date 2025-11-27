@@ -146,36 +146,108 @@ function App() {
 
     if (routeInfo.route === '/products') {
       const products = [
-        { key: 'mobile', name: 'Mobile', desc: 'Smartphones, tablets, and accessories.' },
-        { key: 'laptop', name: 'Laptop', desc: 'Performance notebooks for work and play.' },
-        { key: 'tablet', name: 'Tablet', desc: 'Portable tablets for reading, browsing, and more.' },
-        { key: 'accessories', name: 'Accessories', desc: 'Headphones, chargers, and cases.' },
+        { key: 'mobile', name: 'Mobile', desc: 'Smartphones, tablets, and accessories.', icon: 'mobile' },
+        { key: 'laptop', name: 'Laptop', desc: 'Performance notebooks for work and play.', icon: 'laptop' },
+        { key: 'tablet', name: 'Tablet', desc: 'Portable tablets for reading, browsing, and more.', icon: 'tablet' },
+        { key: 'accessories', name: 'Accessories', desc: 'Headphones, chargers, and cases.', icon: 'accessories' },
       ];
+
+      // Icon component factory for leading visuals
+      const Icon = ({ type }) => {
+        const base = 'h-5 w-5';
+        // All icons are decorative; aria-hidden for screen readers
+        switch (type) {
+          case 'mobile':
+            return (
+              <svg className={`${base}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M7 3a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2V5a2 2 0 00-2-2H7zm0 2h6v10H7V5zm3 9a1 1 0 100 2 1 1 0 000-2z" />
+              </svg>
+            );
+          case 'laptop':
+            return (
+              <svg className={`${base}`} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v7H4V6z" />
+                <path d="M2 17a1 1 0 011-1h18a1 1 0 011 1v1H2v-1z" />
+              </svg>
+            );
+          case 'tablet':
+            return (
+              <svg className={`${base}`} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M6 3h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2zm0 2v14h12V5H6zm6 13a1 1 0 100 2 1 1 0 000-2z" />
+              </svg>
+            );
+          case 'accessories':
+            return (
+              <svg className={`${base}`} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M7 7a5 5 0 0110 0v4h-2V7a3 3 0 10-6 0v4H7V7z" />
+                <path d="M5 11h14a2 2 0 012 2v5a3 3 0 01-3 3H6a3 3 0 01-3-3v-5a2 2 0 012-2zm0 2v5a1 1 0 001 1h12a1 1 0 001-1v-5H5z" />
+              </svg>
+            );
+          default:
+            return null;
+        }
+      };
+
       return (
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Products</h1>
             <p className="text-gray-600 mt-1">Browse a few sample products below.</p>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {products.map((p) => (
               <div
                 key={p.key}
-                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow transition"
+                className="group rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow transition focus-within:ring-2 focus-within:ring-primary"
               >
-                <div className="font-medium text-gray-900">{p.name}</div>
-                <div className="text-sm text-gray-600 mt-1">{p.desc}</div>
-                <div className="mt-3">
-                  <a
-                    href={`#/products/${p.key}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(`/products/${p.key}`);
-                    }}
-                    className="text-primary hover:text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
+                <div className="flex items-start gap-3">
+                  {/* Leading icon/badge */}
+                  <span
+                    className={`inline-flex items-center justify-center rounded-md p-2 ${
+                      p.key === 'mobile'
+                        ? 'bg-primary/10 text-primary'
+                        : p.key === 'laptop'
+                        ? 'bg-secondary/10 text-secondary'
+                        : p.key === 'tablet'
+                        ? 'bg-blue-500/10 text-blue-600'
+                        : 'bg-amber-500/10 text-amber-600'
+                    }`}
+                    aria-hidden="true"
                   >
-                    {p.name === 'Mobile' ? 'View Mobile' : `View ${p.name}`}
-                  </a>
+                    <Icon type={p.icon} />
+                  </span>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900">{p.name}</div>
+                    <div className="text-sm text-gray-600 mt-1">{p.desc}</div>
+                    <div className="mt-3">
+                      <a
+                        href={`#/products/${p.key}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(`/products/${p.key}`);
+                        }}
+                        className="inline-flex items-center gap-1 text-primary hover:text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1"
+                        aria-label={`View ${p.name}`}
+                      >
+                        {/* small indicator dot as additional badge */}
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            p.key === 'mobile'
+                              ? 'bg-primary'
+                              : p.key === 'laptop'
+                              ? 'bg-secondary'
+                              : p.key === 'tablet'
+                              ? 'bg-blue-500'
+                              : 'bg-amber-500'
+                          }`}
+                          aria-hidden="true"
+                        />
+                        <span>{p.name === 'Mobile' ? 'View Mobile' : `View ${p.name}`}</span>
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
